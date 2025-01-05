@@ -4,12 +4,13 @@ import {v4 as uuidV4} from 'uuid';
 import mailService from "./mail-service.js";
 import tokenService from "./token-service.js";
 import UserDto from "../dtos/user-dto.js";
+import {ApiError} from "../exceptions/api-error.js";
 
 class UserService {
     async registration(email, password) {
         const candidate = await UserModel.findOne({email});
         if (candidate) {
-            throw new Error(`Пользователь с почтовым адресом ${email} уже существует`)
+            throw ApiError.BadRequestError(`Пользователь с почтовым адресом ${email} уже существует`)
         }
         const hashPassword = await bcrypt.hash(password, 3);
         const activationLink = uuidV4();
@@ -27,10 +28,10 @@ class UserService {
         }
     }
 
-    async activate(activationLink){
+    async activate(activationLink) {
         const user = await UserModel.findOne({activationLink});
         if (!user) {
-            throw new Error("Некорректная ссылка активации")
+            throw ApiError.BadRequestError("Некорректная ссылка активации")
         }
         user.isActivated = true;
         await user.save();
