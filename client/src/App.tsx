@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import LoginForm from "./components/LoginForm.tsx";
+import {useContext, useEffect, useState} from "react";
+import {Context} from "./main.tsx";
+import {observer} from "mobx-react-lite";
+import {IUser} from "./models/IUser.ts";
+import UserService from "./services/UserService.ts";
 
 function App() {
-  const [count, setCount] = useState(0)
+    const {store} = useContext(Context);
+    const [users, setUsers] = useState<IUser[]>([]);
+    useEffect(() => {
+        if (localStorage.getItem('token')) {
+            store.checkAuth()
+        }
+    }, [])
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    async function getUsers() {
+        try {
+            const response = await UserService.fetchUsers();
+            setUsers(response.data);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    if (store.isLoading) {
+        return <div>Загрузка...</div>
+    }
+
+    if (!store.isAuth) {
+        return (
+            <div>
+                <LoginForm/>
+                <button onClick={getUsers}>Получить пользователей</button>
+            </div>
+        )
+    }
+
+    return (
+        <div>
+            <h1>{store.isAuth ? `Пользователь авторизован ${store.user.email}` : `Авторизуйтесь`}</h1>
+            <h1>{store.user.isActivated ? `Аккаунт активирован по почте` : `Аккаунт не активирован`}</h1>
+            <button onClick={() => store.logout()}>Выйти</button>
+            <div>
+                <button onClick={getUsers}>Получить пользователей</button>
+            </div>
+            {users.map(user => <div key={user.email}>{user.email}</div>)}
+        </div>
+    );
 }
 
-export default App
+export default observer(App);
