@@ -34,6 +34,7 @@ export default class Store {
             this.setAuth(true);
             this.setUser(response.user);
         } catch (error: unknown) {
+            // @ts-ignore
             console.log(error.response?.data?.message);
         }
     }
@@ -46,6 +47,7 @@ export default class Store {
             this.setAuth(true);
             this.setUser(response.user);
         } catch (error: unknown) {
+            // @ts-ignore
             console.log(error.response?.data?.message);
         }
     }
@@ -57,6 +59,7 @@ export default class Store {
             this.setAuth(false);
             this.setUser({} as IUser);
         } catch (error: unknown) {
+            // @ts-ignore
             console.log(error.response?.data?.message);
         }
     }
@@ -70,6 +73,7 @@ export default class Store {
             this.setAuth(true);
             this.setUser(response.data.user);
         } catch (error) {
+            // @ts-ignore
             console.log(error.response?.data?.message);
         } finally {
             this.setLoading(false);
